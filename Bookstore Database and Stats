@@ -1,0 +1,36 @@
+--Create a bookstore database
+
+CREATE TABLE store (id INTEGER PRIMARY KEY, item TEXT, price INTEGER, popularity INTEGER);
+
+INSERT INTO store VALUES (1, "Crying in H Mart", 17.00, 1);
+INSERT INTO store VALUES (2, "Happy Place", 21.99, 2);
+INSERT INTO store VALUES (3, "Grandmaster of Demonic Cultivation", 19.99, 3);
+INSERT INTO store VALUES (4, "Grandmaster of Demonic Cultivation: Special Edition", 26.99, 4);
+INSERT INTO store VALUES (5, "Nightbane", 17.19, 5);
+INSERT INTO store VALUES (6, "The Lonely Hearts Book Club", 16.99, 6);
+INSERT INTO store VALUES (7, "Not So Perfect Strangers", 16.99, 7);
+INSERT INTO store VALUES (8, "Hang the Moon", 22.40, 8);
+INSERT INTO store VALUES (9, "Once Upon a Broken Heart", 10.99, 9);
+INSERT INTO store VALUES (10, "A Curse for True Love", 17.84, 10);
+INSERT INTO store VALUES (11, "Above Ground", 27.00, 11);
+INSERT INTO store VALUES (12, "House of Sky and Breath", 19.00, 12);
+INSERT INTO store VALUES (13, "House of Earth and Blood", 19.00, 13);
+INSERT INTO store VALUES (14, "Twenty Thousand FLeas Under the Sea", 11.99, 14);
+INSERT INTO store VALUES (15, "A Court of Mist and Fury", 16.99, 15);
+
+--display the database ordered by price. 
+SELECT * FROM store
+ORDER BY price desc; 
+
+--what is the avg price of items in the bulk section? 
+SELECT AVG(price) "avg bulk item price"
+FROM store
+where section='bulk'; 
+
+--what are the most 5 popular items? 
+SELECT item, price, popularity
+FROM store
+order by popularity desc
+limit 5; 
+
+
