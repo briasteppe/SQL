@@ -1,0 +1,197 @@
+---1. show customers (full names, customer id, country) who are not in the US. (HINT != or <> can be user to say 'is not equal to'
+select FirstName, LastName, CustomerId, Country
+from chinook.customers
+where Country <> 'USA';
+
+---2. show only the customers from Brazil
+select FirstName, LastName, CustomerId, Country
+from chinook.customers
+where Country = 'Brazil';
+
+---3. find the invoices of customers who are from Brazil. the resulting table should show the customer's full name, Invoice IS, Date of the invoice, the billing country
+select FirstName, LastName, Invoiceid, InvoiceDate, BillingCountry
+from chinook.invoices receipt
+left join chinook.customers cust
+on receipt.Invoiceid = cust.CustomerId
+where country = 'Brazil';
+
+---4. show the employees who are sales agents
+select EmployeeId, FirstName, LastName, Title
+from chinook.employees
+where Title = 'Sales Support Agent';
+
+---5. find a unique/distinct list of billing countries from the invoice table
+select InvoiceId, CustomerId, BillingCountry
+from chinook.invoices
+where BillingCountry In
+    (
+    Select BillingCountry
+    from chinook.invoices
+    group by BillingCountry
+    Having COUNT(*) >=10
+    )
+Order by BillingCountry;
+
+
+---6. provide a query that shows the invoices associated with each sales agent. the resulting table should include the ssales agent's full name
+------link employees to customers to invoices
+
+select FirstName, LastName, EmployeeId, InvoiceId, CustomerId, InvoiceDate, BillingAddress, BillingCity, BillingCountry, Total 
+from chinook.invoices rec
+left join chinook.employees emp
+on rec.invoiceid = emp.employeeid
+Where title = 'Sales Support Agent'
+AND LastName <> 'NULL'
+or LastName <> ' ';
+
+---7. show the invoice total, customer name, country, and sales agent name for all invoices and customers
+select invo.Total, cust.FirstName ||" "|| cust.LastName as "Customer",
+ cust.Country, emp.FirstName ||" "|| emp.LastName as "Sales Agent Name"
+from chinook.invoices invo
+join chinook.customers cust
+on invo.CustomerId = cust.CustomerId
+join chinook.employees emp
+on cust.SupportRepId = emp.EmployeeId
+;
+
+---8. how many invoives were there in 2009?
+select count(InvoiceId)
+from chinook.invoices
+where InvoiceDate LIKE '2009%';
+
+---9. what are the total sales for 2009?
+select sum(Total)
+from chinook.invoices
+where InvoiceDate LIKE '2009%';
+
+---10. write a query that includes the purchased track name with each invoice line ID
+------use invoice_items and tracks
+select Name,  InvoiceLineID
+from chinook.tracks song
+left join chinook.invoice_items item
+on song.TrackId = item.TrackId
+order by Name asc;
+
+---11. write a query that includes the purchased track name AND artist name with each invoice line ID
+select song.Name, singer.Name as Artists, InvoiceLineId 
+from chinook.invoice_items item
+left join chinook.tracks song
+on item.TrackId = song.TrackId
+left join chinook.albums album
+on song.AlbumId = album.AlbumID
+left join chinook.artists singer
+on album.ArtistId = singer.ArtistId
+order by song.Name;
+
+---12. provide a query that shows all the tracks, and include the album name, media tyoe, and genre.
+select song.Name as 'Song Title', clump.Title, media.Name, genre.Name 
+from chinook.albums clump
+left join chinook.tracks song
+on clump.AlbumId = song.ALbumId
+left join chinook.media_types media
+on song.MediaTypeId = media.MediaTypeId
+left join chinook.genres genre
+on song.GenreId = genre.GenreId
+order by song.Name;
+
+---13. show the total sales made by each sales agent.
+select emp.FirstName, emp.LastName, SUM(invo.Total) as 'Total Sales'
+from chinook.employees emp, chinook.customers cust, chinook.invoices invo
+where emp.EmployeeId == cust.SupportRepId
+And cust.CustomerId == invo.CustomerId
+AND emp.FirstName <> " "
+;
+
+---14. which sales agent made the most dollars in sales in 2009? 
+--- two tables need: employees and invoices, but join three
+select emp.FirstName, emp.LastName, SUM(invo.Total) as 'Total Sales'
+from chinook.employees emp, chinook.customers cust, chinook.invoices invo
+where emp.EmployeeId == cust.SupportRepId
+And cust.CustomerId == invo.CustomerId
+AND invo.InvoiceDate Like '2009%'
+AND emp.FirstName <> " "
+Group by emp.FirstName, emp.LastName
+Order by SUM(invo.Total) desc
+limit 1
+;
+
+---provide a query that shows the number of invoices per country (use Group by)
+select invo.BillingCountry, Count(invo.BillingCountry) as "Number of Invoices"
+from chinook.invoices invo
+group by invo.BillingCountry;
+
+---provide a query that shows the total number of tracks in each playlist. the playlist names should be included
+select p.Name as "Playlist Name", Count(pt.TrackId) as "Number of Tracks"
+from chinook.playlists p
+left join chinook.playlist_track pt
+on p.PlaylistId = pt.PlaylistId
+Group by p.PlaylistId;
+
+---provide a query that shows the count of customers assigned to each sales agent
+---use table employees joined to customers
+select emp.FirstName ||" "|| emp.LastName as "Sales Rep", COUNT(cust.SupportRepId) as "Num of Customers"
+from chinook.employees emp
+left join chinook.customers cust
+on emp.EmployeeId = cust.SupportRepId
+Group by emp.FirstName ||" "|| emp.LastName; 
+
+---provide a query that shows the total sales per country
+select i.BillingCountry, COUNT(i.InvoiceId) as "Number of Sales"
+from chinook.invoices i
+group by i.BillingCountry;
+
+---which country's customers spent the most
+select distinct i.BillingCountry, SUM(i.Total) as "Total Sales"
+from chinook.invoices i
+group by i.BillingCountry
+order by SUM(i.Total) desc
+LIMIT 1;
+
+---provice a query that shows the most purchased track of 2013
+select t.Name as "Track Name", COUNT(ii.InvoiceLineId) as "Purchase Count"
+from chinook.tracks t
+left join chinook.invoice_items ii
+on t.TrackId = ii.TrackId
+left join chinook.invoices i
+on ii.InvoiceId = i.InvoiceId
+where i.InvoiceDate Like "2013%"
+Group by t.Name
+order by COUNT(ii.InvoiceLineId)
+Desc Limit 1;
+
+---provide a query that shows the 5 most purchased tracks over all
+select t.name as "Most Popular Track Name", COUNT(ii.InvoiceLineId) as "Purchase Count"
+from chinook.tracks t
+left join chinook.invoice_items ii
+on t.TrackId = ii.TrackId
+group by t.Name
+order by COUNT(ii.InvoiceLineId) desc
+limit 5;
+
+---provide a query that shows the top 3 selling artisits
+select ar.Name, COUNT(ii.TrackId)
+from chinook.artists ar
+left join chinook.albums al
+on ar.ArtistId = al.ArtistId
+left join chinook.tracks t
+on al.AlbumId = t.AlbumId
+left join chinook.invoice_items ii
+on t.TrackId = ii.TrackId
+
+group by ar.Name
+order by COUNT(ii.TrackId) desc
+limit 3;
+
+---provide a query that shows the most purchase media type
+select med.Name as "Popular Media Type", COUNT(ii.TrackId) as "Purchase Count"
+from chinook.media_types med
+left join chinook.tracks t
+on med.MediaTypeId = t.MediaTypeId
+left join chinook.invoice_items ii
+on t.TrackId = ii.TrackId
+
+group by med.Name
+order by COUNT(ii.TrackId) desc
+limit 1;
+
+
